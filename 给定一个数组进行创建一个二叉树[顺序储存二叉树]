@@ -1,0 +1,118 @@
+public class ArrayIndexTreeDemo{
+    public static void main(String[] args) {
+        int[] arr = {1,2,3,4,5,6,7};
+        ArrayIndexTree tree = new ArrayIndexTree(arr);
+        tree.preOrderByIndex(0);
+        System.out.println();
+        ArrayIndexNode root = tree.creatTreeByIndexNode(arr);
+        tree.preOrder(root);
+
+    }
+}
+class ArrayIndexTree {
+    private int[] arr = null;
+    private ArrayIndexNode root = null;
+    public ArrayIndexTree() { }
+    public ArrayIndexTree(int[] arr) {
+        this.arr = arr;
+    }
+
+    /**
+     * 就是用一个数组进行前序遍历，一个顺序存储二叉树
+     * @param index 从什么下标开始
+     */
+    public void preOrderByIndex(int index){
+        if(arr == null || arr.length == 0) { return;}
+        // 打印现在的数据
+        System.out.printf("%d ",arr[index]);
+        // 遍历左子树 --> 计算左子节点的下标
+        if((index * 2 + 1) < arr.length){
+            preOrderByIndex(2 * index + 1);
+        }
+        // 遍历右子树 --> 计算右子节点的下标
+        if((index * 2 + 2) < arr.length ){
+            preOrderByIndex(2 * index + 2);
+        }
+    }
+
+    /**
+     * 根据一个根节点来前序遍历
+     * @param root 根节点
+     */
+    public void preOrder(ArrayIndexNode root){
+        if(root == null){ return; }
+        System.out.printf("%d ",root.getData() );
+        preOrder(root.getLeft());
+        preOrder(root.getRight());
+    }
+    /**
+     * 通过数组的下标定位结点形成二叉树
+     * 注意：使用这样的方法创建一个树，很浪费空间，时间也不好
+     * 当然，这里要使用链表的话也是一样的创建的
+     * @param arr 数组，要创建结点的
+     */
+    public ArrayIndexNode creatTreeByIndexNode(int[] arr){
+        if(arr == null || arr.length == 0) { return null; }
+        ArrayIndexNode[] list = creatNodeArray(arr);
+        int len = arr.length;
+        // 1、遍历数组，根据下标来创建结点
+        for (int i = 0; i < len / 2; i++) {
+            if((i * 2 + 1) < len){
+                // 创建当前结点的左子节点
+                list[i].setLeft(list[i*2+1]);
+            }
+            if ((i * 2 + 2) < len) {
+                // 创建当前结点的右子节点
+                list[i].setRight(list[i*2+2]);
+            }
+        }
+        return list[0];
+    }
+    /**
+     * 根据一个数据数组创建一个封装好的结点数组
+     * @param arr 数据数组
+     * @return 封装好的结点数组
+     */
+    public ArrayIndexNode[] creatNodeArray(int[] arr){
+        int len = arr.length;
+        ArrayIndexNode[] list = new ArrayIndexNode[len];
+        // 遍历数组创建每一个结点
+        for (int i = 0; i < len; i++) {
+            list[i] = new ArrayIndexNode(arr[i]);
+        }
+        return list;
+    }
+
+    public int[] getArr() { return arr; }
+    public void setArr(int[] arr) { this.arr = arr; }
+    public ArrayIndexNode getRoot() { return root; }
+    public void setRoot(ArrayIndexNode root) { this.root = root; }
+}
+
+/**
+ * 根据数组下标来创建树的结点类
+ */
+class ArrayIndexNode{
+    private int data;
+    private ArrayIndexNode left;
+    private ArrayIndexNode right;
+
+    public ArrayIndexNode() { }
+    public ArrayIndexNode(int data) { this.data = data; }
+    public ArrayIndexNode(int data, ArrayIndexNode left, ArrayIndexNode right) {
+        this.data = data;
+        this.left = left;
+        this.right = right;
+    }
+    public boolean add(ArrayIndexNode node){
+        if(node == null) { return false; }
+        return false;
+    }
+    public int getData() { return data;}
+    public void setData(int data) { this.data = data;}
+    public ArrayIndexNode getLeft() { return left; }
+    public void setLeft(ArrayIndexNode left) { this.left = left; }
+    public ArrayIndexNode getRight() { return right; }
+    public void setRight(ArrayIndexNode right) { this.right = right; }
+
+}
