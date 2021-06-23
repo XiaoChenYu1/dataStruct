@@ -1,0 +1,199 @@
+public class ThreadedBinaryTreeDemo{
+    public static void main(String[] args) {
+        int[] arr = {1,2,3,4,5,6};
+        ThreadedBinaryTree tree = new ThreadedBinaryTree(arr);
+        ThreadedBinaryNode root = tree.creatTree(arr);
+        tree.midOrder(root);
+        ThreadedBinaryNode findNode = tree.findNode(5);
+        // 线索化这颗二叉树
+        tree.ThreadTree_MidOrd(tree.getRoot());
+        // 测试这个线索化是否成功
+        System.out.println();
+        System.out.println("前驱结点 = "+findNode.getLeft().getData());  // 2
+        System.out.println("后继结点 = "+findNode.getRight().getData()); // 1
+
+    }
+}
+class ThreadedBinaryTree {
+    private int[] arr = null; // 数据域
+    private ThreadedBinaryNode root = null;// 根节点
+    private ThreadedBinaryNode preNode = null;// 前驱结点
+    public ThreadedBinaryTree() { }
+    public ThreadedBinaryTree(int[] arr) {
+        this.arr = arr;
+    }
+
+    /**
+     * 线索化当前这颗二叉树
+     * @param cur 当前结点开始线索化
+     */
+    public void ThreadTree_MidOrd(ThreadedBinaryNode cur){
+        if( cur == null ) { return; }
+        // 1、找到左子树进行线索化
+        ThreadTree_MidOrd(cur.getLeft());
+        // 2、线索化当前左子树
+        if( cur.getLeft() == null){
+            // 左结点为空，那就要将左子结点指向前驱结点
+            cur.setLeft(preNode);
+            // 设置当前结点，是指向前驱结点的
+            cur.setLeftType(1);
+        }
+        // 处理后继结点的问题：是要跳到下一个结点的时候进行处理
+        //      就相当于cur这个"当前结点" 就是 pre这个"前驱结点"的 "后继结点"
+        if( preNode != null && preNode.getRight() == null ){
+            preNode.setRight(cur);
+            preNode.setRightType(1);
+        }
+        /*
+         线索化完成当前结点的时候，就要让前驱结点变为当前结点
+         因为：到这就要处理[当前结点]的 "右子节点"，而阵对于中序遍历的话
+              [当前结点]就是 "右子结点" 的 "前驱结点"
+         */
+        preNode = cur;
+        // 3、找到右子树进行线索化m
+        ThreadTree_MidOrd(cur.getRight());
+    }
+    public void midOrderByIndex(ThreadedBinaryNode root){
+        if(root == null) { return;}
+        // 1、遍历左子树 --> 计算左子节点的下标
+        midOrderByIndex(root.getLeft());
+        // 2、打印现在的数据
+        System.out.printf("%d ",root.getData());
+        // 3、遍历右子树 --> 计算右子节点的下标
+        midOrderByIndex(root.getRight());
+    }
+    public ThreadedBinaryNode findNode(int data){
+        if( root == null ) { return null;}
+        return root.findNode(data);
+    }
+
+    /**
+     * 就是用一个数组进行前序遍历，一个顺序存储二叉树
+     * @param index 从什么下标开始
+     */
+    public void preOrderByIndex(int index){
+        if(arr == null || arr.length == 0) { return;}
+        // 打印现在的数据
+        System.out.printf("%d ",arr[index]);
+        // 遍历左子树 --> 计算左子节点的下标
+        if((index * 2 + 1) < arr.length){
+            preOrderByIndex(2 * index + 1);
+        }
+        // 遍历右子树 --> 计算右子节点的下标
+        if((index * 2 + 2) < arr.length ){
+            preOrderByIndex(2 * index + 2);
+        }
+    }
+
+    /**
+     * 根据一个根节点来前序遍历
+     * @param root 根节点
+     */
+    public void preOrder(ThreadedBinaryNode root){
+        if(root == null){ return; }
+        System.out.printf("%d ",root.getData() );
+        preOrder(root.getLeft());
+        preOrder(root.getRight());
+    }
+    public void midOrder(ThreadedBinaryNode root){
+        if(root == null){ return; }
+        midOrder(root.getLeft());
+        System.out.printf("%d ",root.getData() );
+        midOrder(root.getRight());
+    }
+    /**
+     * 通过数组的下标定位结点形成二叉树
+     * 注意：使用这样的方法创建一个树，很浪费空间，时间也不好
+     * 当然，这里要使用链表的话也是一样的创建的
+     * @param arr 数组，要创建结点的
+     */
+    public ThreadedBinaryNode creatTree(int[] arr){
+        if(arr == null || arr.length == 0) { return null; }
+        ThreadedBinaryNode[] list = creatNodeArray(arr);
+        int len = arr.length;
+        // 1、遍历数组，根据下标来创建结点
+        for (int i = 0; i < len / 2; i++) {
+            if((i * 2 + 1) < len){
+                // 创建当前结点的左子节点
+                list[i].setLeft(list[i*2+1]);
+            }
+            if ((i * 2 + 2) < len) {
+                // 创建当前结点的右子节点
+                list[i].setRight(list[i*2+2]);
+            }
+        }
+        this.setRoot(list[0]);
+        return list[0];
+    }
+    /**
+     * 根据一个数据数组创建一个封装好的结点数组
+     * @param arr 数据数组
+     * @return 封装好的结点数组
+     */
+    public ThreadedBinaryNode[] creatNodeArray(int[] arr){
+        int len = arr.length;
+        ThreadedBinaryNode[] list = new ThreadedBinaryNode[len];
+        // 遍历数组创建每一个结点
+        for (int i = 0; i < len; i++) {
+            list[i] = new ThreadedBinaryNode(arr[i]);
+        }
+        return list;
+    }
+
+    public int[] getArr() { return arr; }
+    public void setArr(int[] arr) { this.arr = arr; }
+    public ThreadedBinaryNode getRoot() { return root; }
+    public void setRoot(ThreadedBinaryNode root) { this.root = root; }
+}
+
+/**
+ * 根据数组下标来创建树的结点类
+ */
+class ThreadedBinaryNode{
+    private int data;
+    private ThreadedBinaryNode left;
+    private ThreadedBinaryNode right;
+    // 规定：0代表是指向对应的子结点，1代表是之前前驱/后继结点
+    private int leftType = 0;  // 左子结点的类型，是指向自己的左子结点还是前驱结点
+    private int rightType = 0; // 右子结点的类型，是指向自己的右子结点还是后继结点
+
+    public ThreadedBinaryNode() { }
+    public ThreadedBinaryNode(int data) { this.data = data; }
+    public ThreadedBinaryNode(int data, ThreadedBinaryNode left, ThreadedBinaryNode right) {
+        this.data = data;
+        this.left = left;
+        this.right = right;
+    }
+    public ThreadedBinaryNode findNode(int data){
+        ThreadedBinaryNode target = null; // 目标结点
+        // 如果进行当前结点就是那就直接房前
+        if(this.getData() == data) {
+            return this;
+        } else {
+            // 不是当前结点，那么目标结点可能在左子树上，也可能在右子树上
+            if(this.left != null) {
+                // 有左子树，那就前往左子树上查找
+                target = this.left.findNode(data);
+            }
+            // 如果找到了，那就直接返回，不用去右子树上查找
+            if(target != null) { return target; }
+            if( this.right != null) {
+                // 有右子树，那就前往右子树上查找
+                target = this.right.findNode(data);
+            }
+        }
+        return target;
+    }
+
+    public int getData() { return data;}
+    public void setData(int data) { this.data = data;}
+    public ThreadedBinaryNode getLeft() { return left; }
+    public void setLeft(ThreadedBinaryNode left) { this.left = left; }
+    public ThreadedBinaryNode getRight() { return right; }
+    public void setRight(ThreadedBinaryNode right) { this.right = right; }
+    public int getLeftType() { return leftType; }
+    public void setLeftType(int leftType) { this.leftType = leftType; }
+    public int getRightType() { return rightType; }
+    public void setRightType(int rightType) { this.rightType = rightType; }
+
+}
