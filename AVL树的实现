@@ -1,0 +1,254 @@
+
+/**
+ * @author 小晨Yu呀!
+ * @time 2021-06-23
+ * AVL树的实现
+ * 注意：这里的很多方法很难理解，有不同的写的方式风格就会导致不同的编写形式
+ * 这里的getHigh() / getLeftHigh() / getRightHigh() / searchNode() 
+ *      方法的参数需要好好理解才能明白方法之间是怎么调用的，但是方法在tree这个类中都已经封装好了
+ */
+public class AVLTreeAchieve {
+    public static void main(String[] args) {
+        int[] arr = {10,11,7,6,8,9};
+        AVLTree tree = new AVLTree(arr);
+        tree.creatTree(arr);
+        System.out.println();
+        tree.infixOrder();
+        System.out.printf("\n树的高度 = %d\n",tree.getHigh());
+        System.out.printf("左子树的高度 = %d\n",tree.getLeftHigh());
+        System.out.printf("右子树的高度 = %d\n",tree.getRightHigh());
+        
+        // AVLNode findNode = tree.searchNode(8);
+        AVLNode findNode  = tree.searchNode(10);
+        System.out.println("find left = "+findNode.getLeft().getValue());
+        System.out.println("find right = "+findNode.getRight().getValue());
+    }
+}
+
+
+class AVLTree{
+    private AVLNode root;
+    private int[] values;
+
+    /**
+     * 创建一颗排序二叉树
+     * @param arr 数据域
+     */
+    public void creatTree(int[] arr){
+        if(arr == null || arr.length == 0) {
+            throw new RuntimeException("数组长度有误...");
+        }
+        root = new AVLNode(arr[0]);
+        for (int i = 1; i < arr.length; i++) {
+            AVLNode node = new AVLNode(arr[i]);
+            root.add(node);
+        }
+    }
+
+    /**
+     * 添加一个结点
+     * @param data 数据
+     */
+    public void add(int data){
+        AVLNode node = new AVLNode(data);
+        if(root == null) {
+            root = node;
+            return;
+        }
+        root.add(node);
+    }
+    public AVLNode searchNode(int data){
+        if(root == null ) { return null;}
+        return root.searchNode(data);
+    }
+    /**
+     * 对于这颗树，向外提供一个方法求取这颗树的高度
+     * @return 树的高度
+     */
+    public int getHigh(){
+        if(root == null) { return 0; }
+        return root.getHigh(root);
+    }
+    /**
+     * 对于这颗树，向外提供一个方法求取这颗树的左子树的高度
+     * @return 左子树的高度
+     */
+    public int getLeftHigh(){
+        if(root.getLeft() == null) { return 0;}
+        // 注意：获取高度形式{ 当前结点获取当前结点的左子树高度 }
+        return root.getLeftHigh(root);
+    }
+    /**
+     * 对于这颗树，向外提供一个方法求取这颗树右子树的高度
+     * @return 右子树的高度
+     */
+    public int getRightHigh(){
+        if(root.getRight() == null) { return 0;}
+        return root.getRightHigh(root) ;
+    }
+    /**
+     * 这颗树进行中序遍历
+     */
+    public void infixOrder(){
+        this.root.infixOrder(root);
+    }
+    public AVLTree(){}
+    public AVLTree(int[] values) { this.values = values; }
+    public AVLTree(AVLNode root, int[] values) {
+        this.root = root;
+        this.values = values;
+    }
+
+    public AVLNode getRoot() {
+        return root;
+    }
+    public void setRoot(AVLNode root) {
+        this.root = root;
+    }
+}
+
+class AVLNode{
+    private int value;
+    private AVLNode left;
+    private AVLNode right;
+    public AVLNode(){}
+    public AVLNode(int value){
+        this.value = value;
+    }
+    public AVLNode(int value,AVLNode left,AVLNode right){
+        this.value = value; this.left = left; this.right = right;
+    }
+    public void add(AVLNode node){
+        if(node == null ) { throw new RuntimeException("结点不能为空..."); }
+        // 当前结点比加入结点值大，node放左子树
+        if(this.value > node.value){
+            // 左子结点没有值，那就直接放入左子节点
+            if(this.left == null) {
+                this.left = node;
+            } else {
+                // 左子节点有值，那就将这个结点放到左子树上再一次开始【判断遍历
+                this.left.add(node);
+            }
+        } else {
+            // 左子结点没有值，那就直接放入左子节点
+            if(this.right == null) {
+                this.right = node;
+            } else {
+                // 左子节点有值，那就将这个结点放到左子树上再一次开始【判断遍历
+                this.right.add(node);
+            }
+        }
+        // 如果当前的右子树高度大于左子树的高度 --> 进行左旋转
+        // 注意：计算形式{ 当前结点获取当前结点的左子树高度/右子树相同 }
+        if(getRightHigh(this) - getLeftHigh(this) > 1 ){
+            // 如果当前结点的 右子点的左子树高度 > 右子结点的右子树高度
+            // --> 1、进行当前结点的右子结点的右旋转 ，2、当前结点左旋转
+            if(getRight() != null && (getRight().getLeftHigh( getRight() )
+                    > getRight().getRightHigh(getRight())) ){
+                    getRight().rightRotate();
+            }
+            leftRotate();
+        }
+        // 如果当前的左子树高度大于右子树的高度 --> 进行右旋转
+        if(getLeftHigh(this) - getRightHigh(this) > 1){
+            // 如果当前结点的 左子结点的右子树高度 > 左子结点的左子树高度
+            // --> 1、进行左子结点左旋转 ，2、当前结点右旋转
+            if(getLeft() != null && (getLeft().getRightHigh( getLeft() )
+                    > getLeft().getLeftHigh( getLeft())) ){
+                getLeft().leftRotate();
+            }
+            rightRotate();
+        }
+
+    }
+
+    /**
+     * 左旋，详细在步骤中
+     */
+    public void leftRotate(){
+        // 1、创建一个新的结点，以当前结点的值为新的结点的值
+        AVLNode newNode = new AVLNode(this.value);
+        // 2、把新的结点的左子树设置为当前结点的左子树
+        newNode.setLeft(this.getLeft());
+        // 3、把新的结点的右子树设置为当前结点的右子树的左子树
+        if(this.getRight() != null) { newNode.setRight(this.getRight().getLeft()); }
+        // 4、把当前结点的值替换成右子结点的值
+        if(this.getRight() != null) { this.setValue(this.getRight().getValue()); }
+        // 5、把当前结点的右子树设置为 "右子结点" 的 "右子结点"
+        if(this.getRight() != null ) { this.setRight(this.getRight().getRight());}
+        // 6、把当前结点的左子树设置为新的结点
+        this.setLeft(newNode);
+    }
+    public void rightRotate(){
+        // 1、创建一个新的结点，以当前结点的值为新的结点的值
+        AVLNode newNode = new AVLNode(this.value);
+        // 2、把新的结点的右子树设置为当前结点的右子树
+        newNode.setRight(this.getRight());
+        // 3、把新的结点的左子树 设置为 当前结点 的左子树的右子树
+        if(this.getLeft() != null) { newNode.setLeft(this.getLeft().getRight()); }
+        // 4、把当前结点的值替换成左子结点的值
+        if(this.getLeft() != null) { this.setValue(this.getLeft().getValue()); }
+        // 5、把当前结点的左子树设置为 "左子结点" 的 "左子结点"
+        if(this.getLeft() != null ) { this.setLeft(this.getLeft().getLeft());}
+        // 6、把当前结点的左子树设置为新的结点
+        this.setRight(newNode);
+    }
+
+    public AVLNode searchNode(int data){
+        AVLNode target = null;
+        if(this.getValue() == data) {
+            return this;
+        } else if(this.getValue() > data && this.getLeft() != null){
+            // 目标结点出现在左子树上
+            target = this.getLeft().searchNode(data);
+        } else if(this.getValue() < data && this.getRight() != null){
+            // 目标结点出现在右子树上
+            target = this.getRight().searchNode(data);
+        }
+        return target;
+    }
+    /**
+     * 获取当前结点node树的高度
+     * @param node 当前结点
+     * @return  当前结点树的高度
+     */
+    public int getHigh(AVLNode node){
+        if(node == null) {return 0;}
+        // 返回左子树中与右子树较大的高度
+        return Math.max(node.left == null ? 0 : node.getHigh(node.left),
+                node.right == null ? 0 : node.getHigh(node.right)) + 1;
+    }
+    public int getLeftHigh(AVLNode node){
+        if(node == null){ return 0; }
+        return node.getHigh(node.left);
+    }
+    public int getRightHigh(AVLNode node){
+        if(node == null) { return 0; }
+        return node.getHigh(node.right);
+    }
+    public void infixOrder(AVLNode cur){
+        if(cur == null ){ return; }
+        infixOrder(cur.left);
+        System.out.printf("%d ",cur.value);
+        infixOrder(cur.right);
+    }
+
+    public int getValue() {
+        return value;
+    }
+    public void setValue(int value) {
+        this.value = value;
+    }
+    public AVLNode getLeft() {
+        return left;
+    }
+    public void setLeft(AVLNode left) {
+        this.left = left;
+    }
+    public AVLNode getRight() {
+        return right;
+    }
+    public void setRight(AVLNode right) {
+        this.right = right;
+    }
+}
